@@ -24,7 +24,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await getUserSession();
-    if (!user || (user.role !== "writer" && user.role !== "admin")) {
+    if (
+      !user ||
+      (user.role !== "writer" &&
+        user.role !== "admin" &&
+        user.userRole !== "writer")
+    ) {
       return NextResponse.json(
         { error: "Architect or Admin privilege required." },
         { status: 403 },

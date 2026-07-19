@@ -7,19 +7,21 @@ import { Button, Card } from "@heroui/react";
 import { useSession } from "@/lib/auth-client";
 import { deleteSpace } from "@/lib/actions/spaces";
 import { motion, AnimatePresence } from "motion/react";
-import {
-  ArrowLeft,
-  Loader2,
-  AlertTriangle,
-  Eye,
-  Trash2,
-} from "lucide-react";
+import { ArrowLeft, Loader2, AlertTriangle, Eye, Trash2 } from "lucide-react";
+
+interface Space {
+  _id: string;
+  title: string;
+  category: string;
+  coverImage?: string;
+  price: number;
+}
 
 export default function ManageItemsPage(): React.JSX.Element {
   const { data: session, isPending } = useSession();
   const router = useRouter();
 
-  const [spaces, setSpaces] = useState<any[]>([]);
+  const [spaces, setSpaces] = useState<Space[]>([]);
   const [loadingSpaces, setLoadingSpaces] = useState<boolean>(true);
   const [warning, setWarning] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -39,6 +41,7 @@ export default function ManageItemsPage(): React.JSX.Element {
           setSpaces(data);
         }
       } catch (err) {
+        setSpaces([]);
       } finally {
         setLoadingSpaces(false);
       }
@@ -166,7 +169,8 @@ export default function ManageItemsPage(): React.JSX.Element {
                 No spatial records registered
               </span>
               <p className="text-xs text-neutral-500 font-light max-w-sm mx-auto">
-                No portfolios have been uploaded to the registry. Try registering a new space to begin.
+                No portfolios have been uploaded to the registry. Try
+                registering a new space to begin.
               </p>
             </div>
           ) : (

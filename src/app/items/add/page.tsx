@@ -150,7 +150,9 @@ export default function AddItemPage(): React.JSX.Element {
             )}
             <div>
               <span className="text-[10px] font-bold uppercase tracking-wider block">
-                {notification.type === "success" ? "Registry Success" : "Registry Failed"}
+                {notification.type === "success"
+                  ? "Registry Success"
+                  : "Registry Failed"}
               </span>
               <p className="text-xs font-light mt-1">{notification.message}</p>
             </div>

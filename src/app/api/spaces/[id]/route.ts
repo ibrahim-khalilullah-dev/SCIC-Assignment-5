@@ -50,7 +50,7 @@ export async function PATCH(
       category: body.category,
       shortDescription: body.shortDescription,
       description: body.description,
-      price: parseFloat(body.price),
+      price: body.price !== undefined ? parseFloat(body.price) : undefined,
       coverImage: body.coverImage,
       dimensions: body.dimensions,
       location: body.location,

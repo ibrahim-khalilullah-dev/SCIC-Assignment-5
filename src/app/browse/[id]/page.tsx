@@ -17,17 +17,25 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-function getCritiques(category: string) {
+interface Critique {
+  quote: string;
+  author: string;
+  source: string;
+}
+
+function getCritiques(category: string): Critique[] {
   const norm = category?.toLowerCase() || "";
   if (norm.includes("brutalism")) {
     return [
       {
-        quote: "A powerful display of raw concrete and structural honesty. The shadows cast by the skylights create a dramatic, ever-changing interior canvas.",
+        quote:
+          "A powerful display of raw concrete and structural honesty. The shadows cast by the skylights create a dramatic, ever-changing interior canvas.",
         author: "Julian Vane",
         source: "Architectural Review",
       },
       {
-        quote: "Brutalism refined. The contrast between rough-cast concrete surfaces and warm walnut accents introduces a sophisticated tension.",
+        quote:
+          "Brutalism refined. The contrast between rough-cast concrete surfaces and warm walnut accents introduces a sophisticated tension.",
         author: "Elena Croft",
         source: "Frame Magazine",
       },
@@ -35,12 +43,14 @@ function getCritiques(category: string) {
   } else if (norm.includes("minimalism") || norm.includes("japandi")) {
     return [
       {
-        quote: "The integration of natural light and raw timber structures in this layout achieves a rare wabi-sabi balance. The transitions between public and private spaces are seamless.",
+        quote:
+          "The integration of natural light and raw timber structures in this layout achieves a rare wabi-sabi balance. The transitions between public and private spaces are seamless.",
         author: "Aria Sterling",
         source: "Spatial Critic",
       },
       {
-        quote: "A masterclass in restraint. The neutral plaster textures harmonize with the low-profile furniture, emphasizing negative space over ornamentation.",
+        quote:
+          "A masterclass in restraint. The neutral plaster textures harmonize with the low-profile furniture, emphasizing negative space over ornamentation.",
         author: "Renato Rossi",
         source: "Domus Forum",
       },
@@ -48,12 +58,14 @@ function getCritiques(category: string) {
   } else if (norm.includes("bauhaus")) {
     return [
       {
-        quote: "A faithful homage to functional geometry. Every structural element serves a clear utility, wrapped in elegant, clean lines.",
+        quote:
+          "A faithful homage to functional geometry. Every structural element serves a clear utility, wrapped in elegant, clean lines.",
         author: "Dieter Schmidt",
         source: "Bauhaus Archiv",
       },
       {
-        quote: "The rationalist design language is executed with precision. Tubular steel and glass details reference classic modernist paradigms.",
+        quote:
+          "The rationalist design language is executed with precision. Tubular steel and glass details reference classic modernist paradigms.",
         author: "Nadia K.",
         source: "Design Museum",
       },
@@ -61,12 +73,14 @@ function getCritiques(category: string) {
   } else {
     return [
       {
-        quote: "Exquisite warmth. The combination of local stone fireplaces and exposed pine trusses evokes a serene forest retreat.",
+        quote:
+          "Exquisite warmth. The combination of local stone fireplaces and exposed pine trusses evokes a serene forest retreat.",
         author: "Björn Larsson",
         source: "Nordic Living",
       },
       {
-        quote: "A celebration of local materials and cozy simplicity. The texture-rich textiles and hearth-centric layout feel authentic.",
+        quote:
+          "A celebration of local materials and cozy simplicity. The texture-rich textiles and hearth-centric layout feel authentic.",
         author: "Fiona Campbell",
         source: "Cabin Journal",
       },
@@ -98,7 +112,8 @@ export default async function SpaceDetailsPage({
               Space Not Found
             </h1>
             <p className="text-xs text-neutral-500 font-light leading-relaxed">
-              The spatial configuration you requested does not exist or has been removed from the archives.
+              The spatial configuration you requested does not exist or has been
+              removed from the archives.
             </p>
           </div>
           <div className="pt-4">
@@ -151,7 +166,7 @@ export default async function SpaceDetailsPage({
             <div className="flex flex-wrap items-center gap-6 text-neutral-400 text-xs font-light">
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-[#dfb780]" />
-                <span>{space.location || "Location N/A"}</span>
+                <span>{space.location || "Global Coordinates N/A"}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Maximize2 className="w-4 h-4 text-neutral-500" />
@@ -197,7 +212,7 @@ export default async function SpaceDetailsPage({
                   <User className="w-3 h-3 text-[#dfb780]" /> Architect
                 </span>
                 <span className="text-xs text-neutral-300 font-medium">
-                  {space.architectName || "Anonymous"}
+                  {space.architectName || "Anonymous Creator"}
                 </span>
               </div>
               <div className="space-y-1">
@@ -274,14 +289,31 @@ export default async function SpaceDetailsPage({
                 Acquire Spatial Plan
               </h3>
               <p className="text-xs text-neutral-500 font-light leading-relaxed">
-                Gain immediate access to verified architectural drawings, dimension layouts, material boards, and 3D assets.
+                Gain immediate access to verified architectural drawings,
+                dimension layouts, material boards, and 3D assets.
               </p>
             </div>
 
             <div className="space-y-3">
-              <button className="w-full h-11 bg-gradient-to-r from-[#dfb780] to-[#c2965d] hover:from-[#e7c79c] hover:to-[#dfb780] text-black text-xs font-bold uppercase tracking-widest rounded-lg transition duration-300 shadow-md shadow-[#dfb780]/5 cursor-pointer">
-                Acquire Spatial Licensing Plan
-              </button>
+              <form
+                action="/api/checkout_sessions"
+                method="POST"
+                className="w-full"
+              >
+                <input type="hidden" name="checkout_type" value="purchase" />
+                <input
+                  type="hidden"
+                  name="space_id"
+                  value={space._id.toString()}
+                />
+                <button
+                  type="submit"
+                  className="w-full h-11 bg-gradient-to-r from-[#dfb780] to-[#c2965d] hover:from-[#e7c79c] hover:to-[#dfb780] text-black text-xs font-bold uppercase tracking-widest rounded-lg transition duration-300 shadow-md shadow-[#dfb780]/5 cursor-pointer"
+                >
+                  Acquire Spatial Licensing Plan
+                </button>
+              </form>
+
               <button className="w-full h-11 bg-white/[0.02] border border-white/5 hover:bg-white/10 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition duration-300 cursor-pointer">
                 Inquire Blueprint Design
               </button>
