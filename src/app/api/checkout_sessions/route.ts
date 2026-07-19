@@ -3,12 +3,13 @@ import type { NextRequest } from "next/server";
 import { headers } from "next/headers";
 import { stripe } from "@/lib/stripe";
 import { getUserSession } from "@/lib/core/session";
-import { getEbookById } from "@/lib/core/ebook";
+import { getDb } from "@/lib/db";
+import { ObjectId } from "mongodb";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const headersList = await headers();
-    const origin = headersList.get("origin") || "";
+    const origin = headersList.get("origin") || "http://localhost:3000";
 
     const formData = await request.formData();
     const checkoutType = formData.get("checkout_type");
@@ -27,12 +28,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     let cancelUrl = "";
 
     if (checkoutType === "purchase") {
-      const ebookId = formData.get("ebook_id") as string;
-      const ebook = await getEbookById(ebookId);
-
-      if (!ebook) {
+      const spaceId = formData.get("space_id") as string;
+      if (!spaceId) {
         return NextResponse.json(
-          { error: "Target manuscript not found" },
+          { error: "Space ID is required for purchase" },
+          { status: 400 },
+        );
+      }
+
+      const db = await getDb();
+      const space = await db
+        .collection("spaces")
+        .findOne({ _id: new ObjectId(spaceId) });
+
+      if (!space) {
+        return NextResponse.json(
+          { error: "Target spatial blueprint not found" },
           { status: 404 },
         );
       }
@@ -42,10 +53,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           price_data: {
             currency: "usd",
             product_data: {
-              name: ebook.title,
-              description: `Digital manuscript authored by ${ebook.writerName}`,
+              name: space.title,
+              description: `Spatial blueprint and licensing from ${space.architectName}`,
             },
-            unit_amount: Math.round(ebook.price * 100),
+            unit_amount: Math.round(space.price * 1000 * 100),
           },
           quantity: 1,
         },
@@ -53,23 +64,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       metadata = {
         type: "purchase",
-        ebookId: ebook._id,
+        associatedItemId: space._id.toString(),
         buyerEmail: user.email,
-        writerEmail: ebook.writerEmail || "",
-        amount: ebook.price.toString(),
+        amount: (space.price * 1000).toString(),
       };
 
-      successUrl = `${origin}/browse/success?session_id={CHECKOUT_SESSION_ID}&ebook_id=${ebook._id}`;
-      cancelUrl = `${origin}/browse/${ebook._id}`;
+      successUrl = `${origin}/browse/success?session_id={CHECKOUT_SESSION_ID}&space_id=${space._id.toString()}`;
+      cancelUrl = `${origin}/browse/${space._id.toString()}`;
     } else if (checkoutType === "verification") {
       lineItems = [
         {
           price_data: {
             currency: "usd",
             product_data: {
-              name: "Fable Writer Verification Fee",
+              name: "Aetheris Architect License Fee",
               description:
-                "One-time platform fee to unlock lifetime digital publishing capabilities",
+                "One-time platform fee to unlock structural design publishing privileges",
             },
             unit_amount: 2000,
           },
@@ -85,6 +95,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       successUrl = `${origin}/dashboard/writer/success?session_id={CHECKOUT_SESSION_ID}`;
       cancelUrl = `${origin}/dashboard/writer`;
+    } else {
+      return NextResponse.json(
+        { error: "Invalid checkout session type" },
+        { status: 400 },
+      );
     }
 
     const session = await stripe.checkout.sessions.create({
