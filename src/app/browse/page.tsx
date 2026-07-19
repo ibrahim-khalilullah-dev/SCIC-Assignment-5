@@ -96,18 +96,13 @@ export default function BrowsePage(): React.JSX.Element {
   useEffect(() => {
     const fetchSpaces = async (): Promise<void> => {
       try {
-        const baseUrl =
-          process.env.NEXT_PUBLIC_BASE_URL ||
-          "https://fable-backend.vercel.app";
-        const res = await fetch(`${baseUrl}/api/spaces`);
+        const res = await fetch("/api/spaces");
         if (res.ok) {
           const data = await res.json();
           setSpaces(data || []);
         }
       } catch (err) {
-        console.warn(
-          "Express backend disconnected. Rendering safe Empty State.",
-        );
+        setSpaces([]);
       } finally {
         setLoading(false);
       }
@@ -269,7 +264,7 @@ export default function BrowsePage(): React.JSX.Element {
                   </div>
 
                   <Link href={`/browse/${space._id}`} className="block">
-                    <Button className="w-full h-8 bg-white/[0.02] border border-white/5 text-neutral-300 hover:bg-white/[0.06] group-hover:bg-gradient-to-r group-hover:from-[#dfb780] group-hover:to-[#c2965d] group-hover:text-black font-bold rounded-lg text-[9px] uppercase tracking-widest transition duration-300 h-9">
+                    <Button className="w-full bg-white/[0.02] border border-white/5 text-neutral-300 hover:bg-white/[0.06] group-hover:bg-gradient-to-r group-hover:from-[#dfb780] group-hover:to-[#c2965d] group-hover:text-black font-bold rounded-lg text-[9px] uppercase tracking-widest transition duration-300 h-9">
                       Inquire Details
                     </Button>
                   </Link>
@@ -280,7 +275,7 @@ export default function BrowsePage(): React.JSX.Element {
         ) : (
           <div className="text-center py-24 bg-[#0a0a0d] border border-white/[0.02] rounded-2xl flex flex-col items-center justify-center p-6 space-y-6">
             <div className="w-12 h-12 rounded-full bg-[#dfb780]/5 border border-[#dfb780]/15 flex items-center justify-center text-[#dfb780]">
-              <Layers className="w-5 h-5 animate-pulse" />
+              <Layers className="w-5 h-5" />
             </div>
             <div className="space-y-2 max-w-sm">
               <h3 className="text-sm uppercase tracking-[0.2em] font-semibold text-white">

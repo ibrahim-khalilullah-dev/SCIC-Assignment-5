@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Button } from "@heroui/react";
 import { CheckCircle, Loader2, AlertCircle } from "lucide-react";
 
-export default function SuccessPage(): React.JSX.Element {
+export default function WriterSuccessPage(): React.JSX.Element {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const [loading, setLoading] = useState<boolean>(true);
@@ -18,7 +18,7 @@ export default function SuccessPage(): React.JSX.Element {
       return;
     }
 
-    const captureTransaction = async (): Promise<void> => {
+    const verifyArchitect = async (): Promise<void> => {
       try {
         const res = await fetch("/api/checkout/session-capture", {
           method: "POST",
@@ -28,7 +28,9 @@ export default function SuccessPage(): React.JSX.Element {
 
         if (!res.ok) {
           const data = await res.json();
-          throw new Error(data.error || "Failed to confirm transaction.");
+          throw new Error(
+            data.error || "Failed to confirm architect credentials.",
+          );
         }
       } catch (err: any) {
         setError(err.message || "An error occurred during verification.");
@@ -37,7 +39,7 @@ export default function SuccessPage(): React.JSX.Element {
       }
     };
 
-    captureTransaction();
+    verifyArchitect();
   }, [sessionId]);
 
   if (loading) {
@@ -46,7 +48,7 @@ export default function SuccessPage(): React.JSX.Element {
         <div className="space-y-4">
           <Loader2 className="w-12 h-12 text-[#dfb780] animate-spin mx-auto" />
           <p className="text-xs uppercase tracking-widest text-neutral-500 font-medium">
-            Authorizing Spatial Registry...
+            Authorizing Architect Credentials...
           </p>
         </div>
       </main>
@@ -65,16 +67,16 @@ export default function SuccessPage(): React.JSX.Element {
               Verification Failed
             </span>
             <h1 className="text-3xl font-light uppercase tracking-widest text-white">
-              Registry Incomplete
+              Activation Incomplete
             </h1>
             <p className="text-xs text-neutral-500 font-light leading-relaxed">
               {error}
             </p>
           </div>
           <div className="pt-4">
-            <Link href="/browse">
+            <Link href="/dashboard/writer">
               <Button className="h-11 px-6 bg-white/[0.02] border border-white/5 text-white text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-white/10 transition duration-300">
-                Return to Catalog
+                Return to Portal
               </Button>
             </Link>
           </div>
@@ -91,14 +93,14 @@ export default function SuccessPage(): React.JSX.Element {
         </div>
         <div className="space-y-2">
           <span className="text-[10px] font-bold text-[#dfb780] uppercase tracking-[0.25em]">
-            Transaction Authorized
+            Architect Status Activated
           </span>
           <h1 className="text-3xl font-light uppercase tracking-widest text-white">
-            Registry Complete
+            Verification Success
           </h1>
           <p className="text-xs text-neutral-500 font-light leading-relaxed">
-            Your spatial blueprints and access licensing structures have been
-            successfully synchronized.
+            Your elite publishing parameters have been synchronized with the
+            Aetheris Vault.
           </p>
         </div>
         <div className="pt-4">
