@@ -1,19 +1,30 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { Button } from "@heroui/react";
 import { motion } from "motion/react";
+import { useSession, signOut } from "@/lib/auth-client";
 
 export default function Navbar(): React.JSX.Element {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const { data: session } = useSession();
+
+  const handleSignOut = async (): Promise<void> => {
+    await signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          window.location.href = "/";
+        },
+      },
+    });
+  };
 
   return (
     <motion.nav
       initial={{ opacity: 0, y: -25 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
-      className="fixed top-0 w-full z-50 bg-[#040404]/60 backdrop-blur-xl border-b border-white/[0.03] px-6 py-4"
+      className="fixed top-0 w-full z-50 bg-[#040404]/60 backdrop-blur-xl border-b border-b-white/[0.03] px-6 py-4"
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group">
@@ -29,7 +40,7 @@ export default function Navbar(): React.JSX.Element {
         </Link>
 
         <div className="hidden md:flex items-center gap-8 text-[9px] uppercase tracking-[0.2em] font-medium text-neutral-400">
-          {["Catalog", "About", "Inquire"].map((link) => (
+          {["Catalog", "About"].map((link) => (
             <Link
               key={link}
               href={link === "Catalog" ? "/browse" : `/${link.toLowerCase()}`}
@@ -39,16 +50,21 @@ export default function Navbar(): React.JSX.Element {
               <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-gradient-to-r from-[#dfb780] to-[#c2965d] transition-all duration-300 group-hover:w-full"></span>
             </Link>
           ))}
-          {isLoggedIn ? (
+
+          {session ? (
             <>
               <Link
-                href="/dashboard/user"
+                href={
+                  session.user.userRole === "writer"
+                    ? "/dashboard/writer"
+                    : "/dashboard/user"
+                }
                 className="hover:text-[#dfb780] transition"
               >
                 Portal
               </Link>
               <Button
-                onClick={() => setIsLoggedIn(false)}
+                onClick={handleSignOut}
                 className="h-8 px-4 bg-white/[0.02] border border-white/5 hover:bg-white/10 text-white text-[9px] font-bold rounded-lg uppercase tracking-wider"
               >
                 Logout
@@ -66,12 +82,6 @@ export default function Navbar(): React.JSX.Element {
                   Join
                 </Button>
               </Link>
-              <button
-                onClick={() => setIsLoggedIn(true)}
-                className="text-[8px] text-neutral-600 border border-neutral-800/80 px-2 py-0.5 rounded hover:border-[#dfb780]/30 transition"
-              >
-                [Mock Login]
-              </button>
             </div>
           )}
         </div>
