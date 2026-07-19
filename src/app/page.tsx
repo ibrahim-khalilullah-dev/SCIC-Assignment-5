@@ -3,6 +3,7 @@ import Hero from "@/components/Hero";
 import Stats from "@/components/Stats";
 import Features from "@/components/Features";
 import Pipeline from "@/components/Pipeline";
+import Editorial from "@/components/Editorial";
 import Inquiries from "@/components/Inquiries";
 import Newsletter from "@/components/Newsletter";
 import Footer from "@/components/Footer";
@@ -14,9 +15,11 @@ export default function LandingPage(): React.JSX.Element {
       <Stats />
       <Features />
       <Pipeline />
+      <Editorial />
       <Inquiries />
       <Newsletter />
       <Footer />
     </div>
   );
 }
+
