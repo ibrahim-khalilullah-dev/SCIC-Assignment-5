@@ -30,7 +30,7 @@ export async function getUserToken(): Promise<string | null> {
 }
 
 export async function requireRole(
-  allowedRole: "user" | "writer" | "admin",
+  allowedRole: "user" | "writer" | "admin" | "moderator",
 ): Promise<CustomUser> {
   const user = await getUserSession();
 
@@ -38,7 +38,30 @@ export async function requireRole(
     redirect("/auth/signin");
   }
 
-  if (user.role !== allowedRole) {
+  const roleKey = user.role?.toLowerCase();
+  const subRoleKey = user.userRole?.toLowerCase();
+
+  if (roleKey === "admin") {
+    return user;
+  }
+
+  if (allowedRole === "admin" && roleKey !== "admin") {
+    redirect("/unauthorized");
+  }
+
+  if (allowedRole === "moderator" && roleKey !== "moderator") {
+    redirect("/unauthorized");
+  }
+
+  if (allowedRole === "writer" && subRoleKey !== "writer") {
+    redirect("/unauthorized");
+  }
+
+  if (
+    allowedRole === "user" &&
+    subRoleKey !== "user" &&
+    subRoleKey !== "writer"
+  ) {
     redirect("/unauthorized");
   }
 

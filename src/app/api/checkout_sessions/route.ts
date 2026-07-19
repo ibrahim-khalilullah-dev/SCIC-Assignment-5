@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { headers } from "next/headers";
 import { stripe } from "@/lib/stripe";
 import { getUserSession } from "@/lib/core/session";
-import { getEbookById } from "@/lib/api/ebooks";
+import { getEbookById } from "@/lib/core/ebook";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
