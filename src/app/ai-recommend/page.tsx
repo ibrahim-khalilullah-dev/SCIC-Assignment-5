@@ -6,13 +6,21 @@ import Link from "next/link";
 import { Button, Card } from "@heroui/react";
 import { useSession } from "@/lib/auth-client";
 import { motion } from "motion/react";
-import {
-  ArrowLeft,
-  Loader2,
-  Compass,
-  CheckCircle,
-  HelpCircle,
-} from "lucide-react";
+import { ArrowLeft, Loader2, Compass, HelpCircle } from "lucide-react";
+
+interface RecommendedSpace {
+  _id: string;
+  title: string;
+  category: string;
+  price: number;
+  coverImage?: string;
+}
+
+interface RecommendationResult {
+  recommendedSpaceId: string;
+  reasoning: string;
+  suitabilityScore: number;
+}
 
 export default function AiRecommendPage(): React.JSX.Element {
   const { data: session, isPending } = useSession();
@@ -23,8 +31,10 @@ export default function AiRecommendPage(): React.JSX.Element {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
 
-  const [recommendation, setRecommendation] = useState<any>(null);
-  const [recommendedSpace, setRecommendedSpace] = useState<any>(null);
+  const [recommendation, setRecommendation] =
+    useState<RecommendationResult | null>(null);
+  const [recommendedSpace, setRecommendedSpace] =
+    useState<RecommendedSpace | null>(null);
 
   useEffect(() => {
     if (!isPending && !session) {
@@ -109,7 +119,8 @@ export default function AiRecommendPage(): React.JSX.Element {
               <Compass className="w-6 h-6 text-[#dfb780]" /> Smart Recommender
             </h1>
             <p className="text-xs text-neutral-500 font-light">
-              Enter your aesthetic preferences and budget limit to discover matching layouts.
+              Enter your aesthetic preferences and budget limit to discover
+              matching layouts.
             </p>
           </div>
         </motion.div>
@@ -222,7 +233,8 @@ export default function AiRecommendPage(): React.JSX.Element {
                         strokeDasharray={175.9}
                         strokeDashoffset={
                           175.9 -
-                          (175.9 * (recommendation.suitabilityScore || 90)) / 100
+                          (175.9 * (recommendation.suitabilityScore || 90)) /
+                            100
                         }
                         className="transition-all duration-1000 ease-out"
                       />
@@ -285,7 +297,8 @@ export default function AiRecommendPage(): React.JSX.Element {
                     Awaiting Input
                   </h3>
                   <p className="text-[10px] text-neutral-500 uppercase tracking-widest leading-relaxed font-light">
-                    Fill out the preferences panel to query the cognitive spatial matching model.
+                    Fill out the preferences panel to query the cognitive
+                    spatial matching model.
                   </p>
                 </div>
               </Card>

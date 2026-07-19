@@ -27,8 +27,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       dimensions: s.dimensions,
     }));
 
-    const systemPrompt = `You are the Aetheris Cognitive Recommendation Engine. 
-Your objective is to review a user's design preferences and financial bounds, analyze the database listings, and logically output the single best match with a deep, authoritative architectural reason.
+    const systemPrompt = `You are the Aetheris Cognitive Recommendation Engine. Your objective is to review a user's design preferences and financial bounds, analyze the database listings, and logically output the single best match with a deep, authoritative architectural reason.
 
 Available Spaces Dataset:
 ${JSON.stringify(formattedSpaces, null, 2)}

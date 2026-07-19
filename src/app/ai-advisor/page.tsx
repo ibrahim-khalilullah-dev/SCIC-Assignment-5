@@ -6,14 +6,7 @@ import Link from "next/link";
 import { Button, Card } from "@heroui/react";
 import { useSession } from "@/lib/auth-client";
 import { motion, AnimatePresence } from "motion/react";
-import {
-  ArrowLeft,
-  Loader2,
-  Sparkles,
-  Send,
-  User,
-  Compass,
-} from "lucide-react";
+import { ArrowLeft, Loader2, Sparkles, Send, User } from "lucide-react";
 
 interface Message {
   role: "user" | "model";
@@ -107,7 +100,10 @@ export default function AiAdvisorPage(): React.JSX.Element {
         return <div key={index} className="h-2" />;
       }
       return (
-        <p key={index} className="leading-relaxed mb-2 font-light text-xs md:text-sm">
+        <p
+          key={index}
+          className="leading-relaxed mb-2 font-light text-xs md:text-sm"
+        >
           {parseInlineMarkdown(line)}
         </p>
       );
@@ -230,7 +226,9 @@ export default function AiAdvisorPage(): React.JSX.Element {
                         {msg.text}
                       </p>
                     ) : (
-                      <div className="space-y-1">{renderMarkdown(msg.text)}</div>
+                      <div className="space-y-1">
+                        {renderMarkdown(msg.text)}
+                      </div>
                     )}
                   </div>
 
