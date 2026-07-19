@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { requireRole } from "@/lib/core/session";
+import { getDb } from "@/lib/db";
 import { Layers, Sparkles, Activity } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -12,43 +13,34 @@ interface InquiredSpace {
   category: string;
   price: number;
   coverImage: string;
-  status: string;
-}
-
-interface InspirationBoard {
-  title: string;
-  items: number;
-  updated: string;
 }
 
 export default async function UserDashboard(): Promise<React.JSX.Element> {
   const user = await requireRole("user");
 
-  const inquiredSpaces: InquiredSpace[] = [
-    {
-      _id: "1",
-      title: "The Obsidian Atrium",
-      architectName: "Julian Vane",
-      category: "Modernist Brutalism",
-      price: 24.5,
-      coverImage: "",
-      status: "In Review",
-    },
-    {
-      _id: "2",
-      title: "Sasaki Sanctuary",
-      architectName: "Kengo Shira",
-      category: "Japandi Minimalism",
-      price: 32.0,
-      coverImage: "",
-      status: "Approved",
-    },
-  ];
+  const db = await getDb();
+  const transactions = await db
+    .collection("transactions")
+    .find({ buyerEmail: user.email, type: "purchase" })
+    .toArray();
 
-  const designInspirations: InspirationBoard[] = [
-    { title: "Wabi-Sabi Kitchen layouts", items: 12, updated: "2 days ago" },
-    { title: "Concrete Textures & Brutalism", items: 8, updated: "1 week ago" },
-  ];
+  const associatedSpaceIds = transactions
+    .map((tx) => tx.associatedItemId)
+    .filter(Boolean);
+
+  const inquiredSpacesRaw = await db
+    .collection("spaces")
+    .find({ _id: { $in: associatedSpaceIds } })
+    .toArray();
+
+  const inquiredSpaces: InquiredSpace[] = inquiredSpacesRaw.map((space) => ({
+    _id: space._id.toString(),
+    title: space.title,
+    architectName: space.architectName,
+    category: space.category,
+    price: space.price,
+    coverImage: space.coverImage || "",
+  }));
 
   return (
     <div className="space-y-12 bg-[#040404] min-h-screen text-neutral-100">
@@ -86,10 +78,10 @@ export default async function UserDashboard(): Promise<React.JSX.Element> {
           </div>
           <div>
             <span className="text-[9px] text-neutral-500 uppercase tracking-widest block">
-              Design Inspiration Boards
+              License Portfolio
             </span>
             <span className="text-xl font-light text-white tracking-wider">
-              {designInspirations.length} Active
+              {transactions.length} Active Licenses
             </span>
           </div>
         </div>
@@ -153,14 +145,8 @@ export default async function UserDashboard(): Promise<React.JSX.Element> {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span
-                        className={`text-[8px] uppercase tracking-widest px-2 py-0.5 rounded ${
-                          space.status === "Approved"
-                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/10"
-                            : "bg-[#dfb780]/15 text-[#dfb780] border border-[#dfb780]/10"
-                        }`}
-                      >
-                        {space.status}
+                      <span className="text-[8px] uppercase tracking-widest px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/10">
+                        Licensed
                       </span>
                     </div>
                   </div>
@@ -304,7 +290,7 @@ export default async function UserDashboard(): Promise<React.JSX.Element> {
             <thead>
               <tr className="border-b border-white/[0.02] text-neutral-500">
                 <th className="py-4 px-2 font-semibold">Reference Key</th>
-                <th className="py-4 px-2 font-semibold">Aether Space</th>
+                <th className="py-4 px-2 font-semibold">Buyer Location</th>
                 <th className="py-4 px-2 font-semibold">Filing Date</th>
                 <th className="py-4 px-2 font-semibold text-right">
                   Retainer Fee
@@ -312,18 +298,25 @@ export default async function UserDashboard(): Promise<React.JSX.Element> {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.01] bg-[#07070a]/10">
-              <tr className="hover:bg-white/[0.01] transition">
-                <td className="py-4 px-2 font-mono text-neutral-600">
-                  TX-AETH-902
-                </td>
-                <td className="py-4 px-2 text-white font-medium">
-                  Sasaki Sanctuary
-                </td>
-                <td className="py-4 px-2 text-neutral-500">July 18, 2026</td>
-                <td className="py-4 px-2 text-right font-bold text-[#dfb780]">
-                  $32.00k
-                </td>
-              </tr>
+              {transactions.map((tx) => (
+                <tr
+                  key={tx._id.toString()}
+                  className="hover:bg-white/[0.01] transition"
+                >
+                  <td className="py-4 px-2 font-mono text-neutral-600">
+                    {tx.stripeSessionId.slice(-12).toUpperCase()}
+                  </td>
+                  <td className="py-4 px-2 text-white font-medium">
+                    {tx.buyerEmail}
+                  </td>
+                  <td className="py-4 px-2 text-neutral-500">
+                    {new Date(tx.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="py-4 px-2 text-right font-bold text-[#dfb780]">
+                    ${tx.amountPaid.toLocaleString()}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

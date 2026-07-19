@@ -3,7 +3,14 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Compass, PlusCircle } from "lucide-react";
+import {
+  LayoutDashboard,
+  Compass,
+  PlusCircle,
+  ShieldAlert,
+  Layers,
+} from "lucide-react";
+import { useSession } from "@/lib/auth-client";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -13,6 +20,10 @@ export default function DashboardLayout({
   children,
 }: DashboardLayoutProps): React.JSX.Element {
   const pathname = usePathname();
+  const { data: session } = useSession();
+
+  const role = session?.user?.role || "user";
+  const userRole = session?.user?.userRole || "user";
 
   return (
     <div className="min-h-screen bg-[#040404] text-neutral-100 flex flex-col md:flex-row pt-20">
@@ -24,9 +35,12 @@ export default function DashboardLayout({
             </span>
 
             <Link
-              href="/dashboard/user"
+              href={
+                userRole === "writer" ? "/dashboard/writer" : "/dashboard/user"
+              }
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium tracking-wider uppercase transition ${
-                pathname === "/dashboard/user"
+                pathname === "/dashboard/user" ||
+                pathname === "/dashboard/writer"
                   ? "bg-[#dfb780]/15 text-[#dfb780]"
                   : "text-neutral-400 hover:text-white hover:bg-white/[0.02]"
               }`}
@@ -47,17 +61,47 @@ export default function DashboardLayout({
               Explore Catalog
             </Link>
 
-            <Link
-              href="/items/add"
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium tracking-wider uppercase transition ${
-                pathname === "/items/add"
-                  ? "bg-[#dfb780]/15 text-[#dfb780]"
-                  : "text-neutral-400 hover:text-white hover:bg-white/[0.02]"
-              }`}
-            >
-              <PlusCircle className="w-4 h-4 text-neutral-500" />
-              Add Space
-            </Link>
+            {(userRole === "writer" || role === "admin") && (
+              <Link
+                href="/items/add"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium tracking-wider uppercase transition ${
+                  pathname === "/items/add"
+                    ? "bg-[#dfb780]/15 text-[#dfb780]"
+                    : "text-neutral-400 hover:text-white hover:bg-white/[0.02]"
+                }`}
+              >
+                <PlusCircle className="w-4 h-4 text-neutral-500" />
+                Add Space
+              </Link>
+            )}
+
+            {(userRole === "writer" || role === "admin") && (
+              <Link
+                href="/items/manage"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium tracking-wider uppercase transition ${
+                  pathname === "/items/manage"
+                    ? "bg-[#dfb780]/15 text-[#dfb780]"
+                    : "text-neutral-400 hover:text-white hover:bg-white/[0.02]"
+                }`}
+              >
+                <Layers className="w-4 h-4 text-neutral-500" />
+                Manage Spaces
+              </Link>
+            )}
+
+            {role === "admin" && (
+              <Link
+                href="/dashboard/admin"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium tracking-wider uppercase transition ${
+                  pathname === "/dashboard/admin"
+                    ? "bg-[#dfb780]/15 text-[#dfb780]"
+                    : "text-neutral-400 hover:text-white hover:bg-white/[0.02]"
+                }`}
+              >
+                <ShieldAlert className="w-4 h-4 text-neutral-500" />
+                Admin Panel
+              </Link>
+            )}
           </div>
         </div>
 
