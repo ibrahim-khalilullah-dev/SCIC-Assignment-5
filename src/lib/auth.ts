@@ -30,6 +30,10 @@ export const auth = betterAuth({
         type: "boolean",
         defaultValue: false,
       },
+      role: {
+        type: "string",
+        defaultValue: "user",
+      },
     },
   },
   plugins: [admin()],

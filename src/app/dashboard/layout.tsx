@@ -89,6 +89,20 @@ export default function DashboardLayout({
               </Link>
             )}
 
+            {(role === "admin" || role === "moderator") && (
+              <Link
+                href="/dashboard/moderator"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium tracking-wider uppercase transition ${
+                  pathname === "/dashboard/moderator"
+                    ? "bg-[#dfb780]/15 text-[#dfb780]"
+                    : "text-neutral-400 hover:text-white hover:bg-white/[0.02]"
+                }`}
+              >
+                <ShieldAlert className="w-4 h-4 text-neutral-500" />
+                Moderator Panel
+              </Link>
+            )}
+
             {role === "admin" && (
               <Link
                 href="/dashboard/admin"
