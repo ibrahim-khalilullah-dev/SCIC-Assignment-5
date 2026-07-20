@@ -1,24 +1,76 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button, Card } from "@heroui/react";
 import { signUp } from "@/lib/auth-client";
-import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  User,
+  Eye,
+  EyeOff,
+  Image as ImageIcon,
+  Loader2,
+} from "lucide-react";
 import { motion } from "motion/react";
 
 export default function SignUpPage(): React.JSX.Element {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [image, setImage] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [role, setRole] = useState<"user" | "writer" | "moderator" | "admin">(
     "user",
   );
   const [loading, setLoading] = useState<boolean>(false);
+  const [uploading, setUploading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+
+  const handleImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ): Promise<void> => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setError("");
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const res = await fetch(
+        "https://api.imgbb.com/1/upload?key=81e9a814e602ad8b0864a375b9d886e2",
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
+
+      if (!res.ok) {
+        throw new Error("Failed to upload avatar image.");
+      }
+
+      const result = await res.json();
+      if (result.success && result.data?.url) {
+        setImage(result.data.url);
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to upload image file.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const triggerFileSelect = (): void => {
+    fileInputRef.current?.click();
+  };
 
   const handleSignUp = async (
     e: React.FormEvent<HTMLFormElement>,
@@ -32,16 +84,25 @@ export default function SignUpPage(): React.JSX.Element {
         email: email.toLowerCase(),
         password,
         name,
-        role: role === "writer" ? "user" : role,
-        userRole: role === "writer" ? "writer" : "user",
-        callbackURL:
-          role === "admin"
-            ? "/dashboard/admin"
-            : role === "moderator"
-              ? "/dashboard/moderator"
-              : role === "writer"
-                ? "/dashboard/writer"
-                : "/dashboard/user",
+        image,
+        userRole: role,
+        fetchOptions: {
+          onSuccess: () => {
+            if (role === "admin") {
+              router.push("/dashboard/admin");
+            } else if (role === "moderator") {
+              router.push("/dashboard/moderator");
+            } else if (role === "writer") {
+              router.push("/dashboard/writer");
+            } else {
+              router.push("/dashboard/user");
+            }
+          },
+          onError: (ctx) => {
+            setError(ctx.error.message || "Registration failed.");
+            setLoading(false);
+          },
+        },
       });
 
       if (authError) {
@@ -56,7 +117,7 @@ export default function SignUpPage(): React.JSX.Element {
 
   return (
     <div className="min-h-screen bg-[#040404] flex items-center justify-center p-6 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-neutral-900/30 via-[#040404] to-[#040404]">
-      <Card className="w-full max-w-md bg-[#0a0a0d] border border-white/20 p-8 rounded-2xl space-y-6 shadow-2xl">
+      <Card className="w-full max-w-md bg-[#0a0a0d] border border-white/10 p-8 rounded-2xl space-y-6 shadow-2xl">
         <div className="text-center space-y-2">
           <h1 className="text-xl uppercase tracking-widest text-white font-light">
             Join Aetheris
@@ -120,6 +181,36 @@ export default function SignUpPage(): React.JSX.Element {
         </div>
 
         <form onSubmit={handleSignUp} className="space-y-4">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageUpload}
+            accept="image/*"
+            className="hidden"
+          />
+
+          <div className="flex flex-col items-center gap-2">
+            <div
+              onClick={triggerFileSelect}
+              className="w-16 h-16 rounded-full border border-white/10 hover:border-[#dfb780]/40 bg-neutral-900 flex items-center justify-center text-[#dfb780] text-xl font-serif italic cursor-pointer overflow-hidden transition relative"
+            >
+              {uploading ? (
+                <Loader2 className="w-5 h-5 text-[#dfb780] animate-spin" />
+              ) : image ? (
+                <img
+                  src={image}
+                  className="w-full h-full object-cover"
+                  alt="Profile"
+                />
+              ) : (
+                <ImageIcon className="w-5 h-5 text-neutral-500" />
+              )}
+            </div>
+            <span className="text-[8px] uppercase tracking-widest text-neutral-500">
+              Click avatar to upload image
+            </span>
+          </div>
+
           <motion.div
             whileHover={{ scale: 1.01 }}
             whileFocus={{ scale: 1.02 }}

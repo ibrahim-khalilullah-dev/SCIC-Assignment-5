@@ -75,9 +75,16 @@ export default function ManageItemsPage(): React.JSX.Element {
     }
   };
 
+  const getBackLink = (): string => {
+    if (!session) return "/";
+    return session.user.userRole === "writer"
+      ? "/dashboard/writer"
+      : "/dashboard/user";
+  };
+
   if (isPending || !session) {
     return (
-      <div className="min-h-screen bg-[#040404] flex items-center justify-center pt-20">
+      <div className="flex items-center justify-center pt-20">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-8 h-8 text-[#dfb780] animate-spin" />
           <span className="text-[10px] uppercase tracking-[0.2em] text-neutral-500 font-medium">
@@ -89,8 +96,8 @@ export default function ManageItemsPage(): React.JSX.Element {
   }
 
   return (
-    <div className="min-h-screen bg-[#040404] text-neutral-100 pt-28 pb-16 px-4 md:px-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="text-neutral-100 pb-16">
+      <div className="max-w-6xl">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -99,7 +106,7 @@ export default function ManageItemsPage(): React.JSX.Element {
         >
           <div className="space-y-1">
             <Link
-              href="/dashboard/user"
+              href={getBackLink()}
               className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest text-neutral-500 hover:text-[#dfb780] transition mb-2"
             >
               <ArrowLeft className="w-3.5 h-3.5" /> Back to Portal
@@ -113,7 +120,7 @@ export default function ManageItemsPage(): React.JSX.Element {
           </div>
 
           <div>
-            <Link href="/items/add">
+            <Link href="/dashboard/items/add">
               <Button className="h-10 px-6 bg-gradient-to-r from-[#dfb780] to-[#c2965d] hover:from-[#e7c79c] hover:to-[#dfb780] text-black text-xs font-bold uppercase tracking-widest rounded-lg transition duration-300 shadow-md">
                 Register Space
               </Button>
@@ -228,7 +235,7 @@ export default function ManageItemsPage(): React.JSX.Element {
                             <Link href={`/browse/${space._id}`}>
                               <Button
                                 size="sm"
-                                className="h-8 bg-white/[0.02] border border-white/5 hover:bg-white/10 text-neutral-300 text-[10px] font-bold uppercase tracking-wider rounded-lg flex items-center gap-1.5"
+                                className="h-8 bg-white/[0.02] border border-white/5 hover:bg-white/10 text-neutral-300 text-[10px] font-bold uppercase tracking-wider rounded-lg flex items-center gap-1.5 cursor-pointer"
                               >
                                 <Eye className="w-3.5 h-3.5" /> View
                               </Button>
@@ -237,7 +244,7 @@ export default function ManageItemsPage(): React.JSX.Element {
                               size="sm"
                               onClick={() => handleDelete(space._id)}
                               isPending={deletingId === space._id}
-                              className="h-8 bg-red-950/20 border border-red-500/10 hover:bg-red-500/10 text-red-400 text-[10px] font-bold uppercase tracking-wider rounded-lg flex items-center gap-1.5"
+                              className="h-8 bg-red-950/20 border border-red-500/10 hover:bg-red-500/10 text-red-400 text-[10px] font-bold uppercase tracking-wider rounded-lg flex items-center gap-1.5 cursor-pointer"
                             >
                               <Trash2 className="w-3.5 h-3.5" /> Delete
                             </Button>
@@ -289,7 +296,7 @@ export default function ManageItemsPage(): React.JSX.Element {
                       <Link href={`/browse/${space._id}`} className="w-full">
                         <Button
                           size="sm"
-                          className="w-full h-9 bg-white/[0.02] border border-white/5 hover:bg-white/10 text-neutral-300 text-[10px] font-bold uppercase tracking-wider rounded-lg flex items-center justify-center gap-1.5"
+                          className="w-full h-9 bg-white/[0.02] border border-white/5 hover:bg-white/10 text-neutral-300 text-[10px] font-bold uppercase tracking-wider rounded-lg flex items-center justify-center gap-1.5 cursor-pointer"
                         >
                           <Eye className="w-3.5 h-3.5" /> View
                         </Button>
@@ -298,7 +305,7 @@ export default function ManageItemsPage(): React.JSX.Element {
                         size="sm"
                         onClick={() => handleDelete(space._id)}
                         isPending={deletingId === space._id}
-                        className="w-full h-9 bg-red-950/20 border border-red-500/10 hover:bg-red-500/10 text-red-400 text-[10px] font-bold uppercase tracking-wider rounded-lg flex items-center justify-center gap-1.5"
+                        className="w-full h-9 bg-red-950/20 border border-red-500/10 hover:bg-red-500/10 text-red-400 text-[10px] font-bold uppercase tracking-wider rounded-lg flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" /> Delete
                       </Button>

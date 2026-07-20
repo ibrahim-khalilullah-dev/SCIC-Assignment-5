@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Card } from "@heroui/react";
@@ -13,11 +13,13 @@ import {
   AlertCircle,
   ArrowLeft,
   Loader2,
+  Image as ImageIcon,
 } from "lucide-react";
 
 export default function AddItemPage(): React.JSX.Element {
   const { data: session, isPending } = useSession();
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [title, setTitle] = useState<string>("");
   const [category, setCategory] = useState<string>("Japandi Minimalism");
@@ -29,6 +31,7 @@ export default function AddItemPage(): React.JSX.Element {
   const [coverImageUrl, setCoverImageUrl] = useState<string>("");
 
   const [loading, setLoading] = useState<boolean>(false);
+  const [uploading, setUploading] = useState<boolean>(false);
   const [notification, setNotification] = useState<{
     type: "success" | "error";
     message: string;
@@ -39,6 +42,51 @@ export default function AddItemPage(): React.JSX.Element {
       router.push("/auth/signin");
     }
   }, [session, isPending, router]);
+
+  const handleImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ): Promise<void> => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setNotification(null);
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const res = await fetch(
+        "https://api.imgbb.com/1/upload?key=81e9a814e602ad8b0864a375b9d886e2",
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
+
+      if (!res.ok) {
+        throw new Error("Failed to upload image asset.");
+      }
+
+      const result = await res.json();
+      if (result.success && result.data?.url) {
+        setCoverImageUrl(result.data.url);
+      } else {
+        throw new Error("Invalid response payload from storage api.");
+      }
+    } catch (err: any) {
+      setNotification({
+        type: "error",
+        message: err.message || "Failed to upload image file.",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const triggerFileSelect = (): void => {
+    fileInputRef.current?.click();
+  };
 
   const handleSubmit = async (
     e: React.FormEvent<HTMLFormElement>,
@@ -61,7 +109,7 @@ export default function AddItemPage(): React.JSX.Element {
 
       const result = await createSpace(spaceData);
 
-      if (result && (result.success || result.spaceId)) {
+      if (result && result.success) {
         setNotification({
           type: "success",
           message: "Spatial portfolio successfully added to the registry.",
@@ -74,15 +122,12 @@ export default function AddItemPage(): React.JSX.Element {
         setDimensions("");
         setLocation("");
         setCoverImageUrl("");
-      } else if (result && result.error) {
-        setNotification({
-          type: "error",
-          message: result.error || "Failed to register spatial portfolio.",
-        });
       } else {
         setNotification({
           type: "error",
-          message: "An unexpected error occurred while saving the space.",
+          message:
+            result?.error ||
+            "An unexpected error occurred while saving the space.",
         });
       }
     } catch (err: any) {
@@ -95,31 +140,33 @@ export default function AddItemPage(): React.JSX.Element {
     }
   };
 
+  const getBackLink = (): string => {
+    if (!session) return "/";
+    return session.user.userRole === "writer"
+      ? "/dashboard/writer"
+      : "/dashboard/user";
+  };
+
   if (isPending || !session) {
     return (
-      <div className="min-h-screen bg-[#040404] flex items-center justify-center pt-20">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-8 h-8 text-[#dfb780] animate-spin" />
-          <span className="text-[10px] uppercase tracking-[0.2em] text-neutral-500 font-medium">
-            Verifying Credentials...
-          </span>
-        </div>
+      <div className="flex items-center justify-center pt-20">
+        <Loader2 className="w-8 h-8 text-[#dfb780] animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#040404] text-neutral-100 pt-28 pb-16 px-4 md:px-8">
-      <div className="max-w-3xl mx-auto">
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-12rem)] w-full text-neutral-100 pb-16">
+      <div className="w-full max-w-4xl space-y-6">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-8 flex items-center justify-between"
+          className="flex items-center justify-between"
         >
           <div className="space-y-1">
             <Link
-              href="/dashboard/user"
+              href={getBackLink()}
               className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest text-neutral-500 hover:text-[#dfb780] transition mb-2"
             >
               <ArrowLeft className="w-3.5 h-3.5" /> Back to Portal
@@ -137,7 +184,7 @@ export default function AddItemPage(): React.JSX.Element {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`p-4 rounded-xl border mb-8 flex items-start gap-3 ${
+            className={`p-4 rounded-xl border flex items-start gap-3 ${
               notification.type === "success"
                 ? "bg-[#dfb780]/5 border-[#dfb780]/20 text-[#dfb780]"
                 : "bg-red-500/5 border-red-500/20 text-red-400"
@@ -159,12 +206,49 @@ export default function AddItemPage(): React.JSX.Element {
           </motion.div>
         )}
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <Card className="bg-[#0a0a0d] border border-white/[0.02] p-6 md:p-8 rounded-2xl shadow-2xl">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageUpload}
+            accept="image/*"
+            className="hidden"
+          />
+
+          <Card
+            onClick={triggerFileSelect}
+            className="bg-[#0a0a0d] border border-white/[0.02] p-6 rounded-2xl flex flex-col items-center justify-center text-center h-[280px] shadow-2xl relative overflow-hidden group cursor-pointer hover:border-[#dfb780]/40 transition duration-300"
+          >
+            {uploading ? (
+              <div className="space-y-2">
+                <Loader2 className="w-8 h-8 text-[#dfb780] animate-spin mx-auto" />
+                <span className="text-[10px] uppercase tracking-widest text-[#dfb780] block font-bold animate-pulse">
+                  Uploading Image...
+                </span>
+              </div>
+            ) : coverImageUrl ? (
+              <img
+                src={coverImageUrl}
+                alt="Upload Preview"
+                className="absolute inset-0 w-full h-full object-cover transition duration-300 group-hover:scale-105"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+            ) : (
+              <div className="space-y-2">
+                <ImageIcon className="w-8 h-8 text-neutral-600 mx-auto" />
+                <span className="text-[10px] uppercase tracking-widest text-neutral-500 block">
+                  Blueprint Image Box
+                </span>
+                <p className="text-[9px] text-neutral-600 uppercase tracking-widest max-w-[150px] mx-auto leading-relaxed">
+                  Click here to upload high-res rendering CAD file from device
+                </p>
+              </div>
+            )}
+          </Card>
+
+          <Card className="bg-[#0a0a0d] border border-white/[0.02] p-6 md:p-8 rounded-2xl md:col-span-2 shadow-2xl">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -292,9 +376,9 @@ export default function AddItemPage(): React.JSX.Element {
                   />
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 md:col-span-2">
                   <label className="text-[10px] uppercase tracking-widest text-neutral-400 block font-medium">
-                    Cover Image URL
+                    Cover Image URL (Auto-populated on device selection above)
                   </label>
                   <input
                     type="url"
@@ -329,14 +413,14 @@ export default function AddItemPage(): React.JSX.Element {
                 <Button
                   type="submit"
                   isPending={loading}
-                  className="w-full md:w-auto h-11 px-8 bg-gradient-to-r from-[#dfb780] to-[#c2965d] hover:from-[#e7c79c] hover:to-[#dfb780] text-black text-xs font-bold uppercase tracking-widest rounded-lg transition duration-300 shadow-md shadow-[#dfb780]/5"
+                  className="w-full md:w-auto h-11 px-8 bg-gradient-to-r from-[#dfb780] to-[#c2965d] hover:from-[#e7c79c] hover:to-[#dfb780] text-black text-xs font-bold uppercase tracking-widest rounded-lg transition duration-300 shadow-md shadow-[#dfb780]/5 cursor-pointer"
                 >
                   Register Portfolio Space
                 </Button>
               </div>
             </form>
           </Card>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

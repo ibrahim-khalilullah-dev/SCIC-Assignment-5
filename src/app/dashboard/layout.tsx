@@ -9,6 +9,7 @@ import {
   PlusCircle,
   ShieldAlert,
   Layers,
+  User,
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 
@@ -25,6 +26,13 @@ export default function DashboardLayout({
   const role = session?.user?.role || "user";
   const userRole = session?.user?.userRole || "user";
 
+  const getPortalHome = (): string => {
+    if (role === "admin") return "/dashboard/admin";
+    if (role === "moderator") return "/dashboard/moderator";
+    if (userRole === "writer") return "/dashboard/writer";
+    return "/dashboard/user";
+  };
+
   return (
     <div className="min-h-screen bg-[#040404] text-neutral-100 flex flex-col md:flex-row pt-20">
       <aside className="w-full md:w-64 shrink-0 bg-[#07070a]/90 border-r border-white/[0.02] p-6 space-y-8 flex flex-col justify-between">
@@ -35,12 +43,12 @@ export default function DashboardLayout({
             </span>
 
             <Link
-              href={
-                userRole === "writer" ? "/dashboard/writer" : "/dashboard/user"
-              }
+              href={getPortalHome()}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium tracking-wider uppercase transition ${
                 pathname === "/dashboard/user" ||
-                pathname === "/dashboard/writer"
+                pathname === "/dashboard/writer" ||
+                pathname === "/dashboard/admin" ||
+                pathname === "/dashboard/moderator"
                   ? "bg-[#dfb780]/15 text-[#dfb780]"
                   : "text-neutral-400 hover:text-white hover:bg-white/[0.02]"
               }`}
@@ -50,9 +58,9 @@ export default function DashboardLayout({
             </Link>
 
             <Link
-              href="/browse"
+              href="/dashboard/browse"
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium tracking-wider uppercase transition ${
-                pathname === "/browse"
+                pathname === "/dashboard/browse"
                   ? "bg-[#dfb780]/15 text-[#dfb780]"
                   : "text-neutral-400 hover:text-white hover:bg-white/[0.02]"
               }`}
@@ -61,11 +69,23 @@ export default function DashboardLayout({
               Explore Catalog
             </Link>
 
+            <Link
+              href="/dashboard/profile"
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium tracking-wider uppercase transition ${
+                pathname === "/dashboard/profile"
+                  ? "bg-[#dfb780]/15 text-[#dfb780]"
+                  : "text-neutral-400 hover:text-white hover:bg-white/[0.02]"
+              }`}
+            >
+              <User className="w-4 h-4 text-neutral-500" />
+              My Profile
+            </Link>
+
             {(userRole === "writer" || role === "admin") && (
               <Link
-                href="/items/add"
+                href="/dashboard/items/add"
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium tracking-wider uppercase transition ${
-                  pathname === "/items/add"
+                  pathname === "/dashboard/items/add"
                     ? "bg-[#dfb780]/15 text-[#dfb780]"
                     : "text-neutral-400 hover:text-white hover:bg-white/[0.02]"
                 }`}
@@ -77,9 +97,9 @@ export default function DashboardLayout({
 
             {(userRole === "writer" || role === "admin") && (
               <Link
-                href="/items/manage"
+                href="/dashboard/items/manage"
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium tracking-wider uppercase transition ${
-                  pathname === "/items/manage"
+                  pathname === "/dashboard/items/manage"
                     ? "bg-[#dfb780]/15 text-[#dfb780]"
                     : "text-neutral-400 hover:text-white hover:bg-white/[0.02]"
                 }`}
@@ -91,9 +111,9 @@ export default function DashboardLayout({
 
             {(role === "admin" || role === "moderator") && (
               <Link
-                href="/dashboard/moderator"
+                href="/dashboard/moderator/inspections"
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium tracking-wider uppercase transition ${
-                  pathname === "/dashboard/moderator"
+                  pathname === "/dashboard/moderator/inspections"
                     ? "bg-[#dfb780]/15 text-[#dfb780]"
                     : "text-neutral-400 hover:text-white hover:bg-white/[0.02]"
                 }`}
@@ -105,9 +125,9 @@ export default function DashboardLayout({
 
             {role === "admin" && (
               <Link
-                href="/dashboard/admin"
+                href="/dashboard/admin/users"
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium tracking-wider uppercase transition ${
-                  pathname === "/dashboard/admin"
+                  pathname === "/dashboard/admin/users"
                     ? "bg-[#dfb780]/15 text-[#dfb780]"
                     : "text-neutral-400 hover:text-white hover:bg-white/[0.02]"
                 }`}
