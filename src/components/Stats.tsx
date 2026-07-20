@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
 
 interface Metric {
@@ -9,12 +9,32 @@ interface Metric {
 }
 
 export default function Stats(): React.JSX.Element {
-  const metrics: Metric[] = [
+  const [metrics, setMetrics] = useState<Metric[]>([
     { value: "180+", label: "Curated Havens" },
     { value: "4.92", label: "Aesthetic Rating" },
     { value: "25k+", label: "Analyzed Spaces" },
     { value: "12", label: "Elite Agencies" },
-  ];
+  ]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch("/api/stats");
+        if (res.ok) {
+          const data = await res.json();
+          setMetrics([
+            { value: data.curatedHavens, label: "Curated Havens" },
+            { value: data.aestheticRating, label: "Aesthetic Rating" },
+            { value: data.analyzedSpaces, label: "Analyzed Spaces" },
+            { value: data.eliteAgencies, label: "Elite Agencies" },
+          ]);
+        }
+      } catch (err) {
+        // Keep default metric configurations on execution error
+      }
+    };
+    fetchStats();
+  }, []);
 
   return (
     <section className="py-16 border-b border-white/[0.02] bg-[#07070a]/10">

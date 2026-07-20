@@ -7,7 +7,14 @@ import { Button, Card } from "@heroui/react";
 import { useSession } from "@/lib/auth-client";
 import { deleteSpace } from "@/lib/actions/spaces";
 import { motion, AnimatePresence } from "motion/react";
-import { ArrowLeft, Loader2, AlertTriangle, Eye, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  AlertTriangle,
+  Eye,
+  Trash2,
+  Edit,
+} from "lucide-react";
 
 interface Space {
   _id: string;
@@ -15,6 +22,7 @@ interface Space {
   category: string;
   coverImage?: string;
   price: number;
+  architectEmail: string;
 }
 
 export default function ManageItemsPage(): React.JSX.Element {
@@ -53,23 +61,18 @@ export default function ManageItemsPage(): React.JSX.Element {
   }, [session]);
 
   const handleDelete = async (id: string): Promise<void> => {
-    if (session?.user?.role !== "admin") {
-      setWarning("Admin authorization required to delete spatial records");
-      return;
-    }
-
     setDeletingId(id);
     setWarning(null);
 
     try {
       const result = await deleteSpace(id);
       if (result && result.error) {
-        setWarning("Admin authorization required to delete spatial records");
+        setWarning(result.error);
       } else {
         setSpaces((prev) => prev.filter((space) => space._id !== id));
       }
     } catch (err: any) {
-      setWarning("Admin authorization required to delete spatial records");
+      setWarning(err.message || "An error occurred during deletion.");
     } finally {
       setDeletingId(null);
     }
@@ -115,7 +118,8 @@ export default function ManageItemsPage(): React.JSX.Element {
               Manage Spaces
             </h1>
             <p className="text-xs text-neutral-500 font-light">
-              Review, inspect, or delete registered spatial portfolio records.
+              Review, inspect, edit, or delete registered spatial portfolio
+              records.
             </p>
           </div>
 
@@ -139,7 +143,7 @@ export default function ManageItemsPage(): React.JSX.Element {
               <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider block">
-                  Access Denied
+                  Action Error
                 </span>
                 <p className="text-xs font-light mt-1">{warning}</p>
               </div>
@@ -194,124 +198,170 @@ export default function ManageItemsPage(): React.JSX.Element {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/[0.02] text-xs font-light">
-                    {spaces.map((space) => (
-                      <tr
-                        key={space._id}
-                        className="hover:bg-white/[0.01] transition duration-200"
-                      >
-                        <td className="py-4 px-6">
-                          <div className="w-16 h-12 relative rounded-lg overflow-hidden bg-neutral-900 border border-white/5">
-                            {space.coverImage ? (
-                              <img
-                                src={space.coverImage}
-                                alt={space.title}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-[10px] text-neutral-600 uppercase tracking-widest font-mono">
-                                Void
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="py-4 px-6 font-medium text-neutral-200">
-                          {space.title}
-                        </td>
-                        <td className="py-4 px-6">
-                          <span className="inline-block px-2 py-0.5 rounded text-[10px] uppercase tracking-wider bg-white/[0.02] text-neutral-400 border border-white/[0.02]">
-                            {space.category}
-                          </span>
-                        </td>
-                        <td className="py-4 px-6 text-[#dfb780] font-medium tracking-wide">
-                          {typeof space.price === "number"
-                            ? space.price.toLocaleString("en-US", {
-                                style: "currency",
-                                currency: "USD",
-                              })
-                            : `$${space.price}`}
-                        </td>
-                        <td className="py-4 px-6 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <Link href={`/browse/${space._id}`}>
-                              <Button
-                                size="sm"
-                                className="h-8 bg-white/[0.02] border border-white/5 hover:bg-white/10 text-neutral-300 text-[10px] font-bold uppercase tracking-wider rounded-lg flex items-center gap-1.5 cursor-pointer"
-                              >
-                                <Eye className="w-3.5 h-3.5" /> View
-                              </Button>
-                            </Link>
-                            <Button
-                              size="sm"
-                              onClick={() => handleDelete(space._id)}
-                              isPending={deletingId === space._id}
-                              className="h-8 bg-red-950/20 border border-red-500/10 hover:bg-red-500/10 text-red-400 text-[10px] font-bold uppercase tracking-wider rounded-lg flex items-center gap-1.5 cursor-pointer"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" /> Delete
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    {spaces.map((space) => {
+                      const isOwner =
+                        space.architectEmail === session?.user?.email;
+                      const isSteward =
+                        session?.user?.role === "admin" ||
+                        session?.user?.role === "moderator";
+                      const canModify = isOwner || isSteward;
 
-              <div className="block md:hidden divide-y divide-white/[0.02]">
-                {spaces.map((space) => (
-                  <div key={space._id} className="p-4 space-y-4">
-                    <div className="flex gap-4">
-                      <div className="w-20 h-16 relative rounded-lg overflow-hidden bg-neutral-900 border border-white/5 shrink-0">
-                        {space.coverImage ? (
-                          <img
-                            src={space.coverImage}
-                            alt={space.title}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-[10px] text-neutral-600 uppercase tracking-widest font-mono">
-                            Void
-                          </div>
-                        )}
-                      </div>
-                      <div className="space-y-1">
-                        <span className="text-neutral-200 font-medium block">
-                          {space.title}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <span className="px-1.5 py-0.5 rounded text-[8px] uppercase tracking-wider bg-white/[0.02] text-neutral-400 border border-white/[0.02]">
-                            {space.category}
-                          </span>
-                          <span className="text-[#dfb780] text-xs font-medium tracking-wide">
+                      return (
+                        <tr
+                          key={space._id}
+                          className="hover:bg-white/[0.01] transition duration-200"
+                        >
+                          <td className="py-4 px-6">
+                            <div className="w-16 h-12 relative rounded-lg overflow-hidden bg-neutral-900 border border-white/5">
+                              {space.coverImage ? (
+                                <img
+                                  src={space.coverImage}
+                                  alt={space.title}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-[10px] text-neutral-600 uppercase tracking-widest font-mono">
+                                  Void
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-4 px-6 font-medium text-neutral-200">
+                            {space.title}
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="inline-block px-2 py-0.5 rounded text-[10px] uppercase tracking-wider bg-white/[0.02] text-neutral-400 border border-white/[0.02]">
+                              {space.category}
+                            </span>
+                          </td>
+                          <td className="py-4 px-6 text-[#dfb780] font-medium tracking-wide">
                             {typeof space.price === "number"
                               ? space.price.toLocaleString("en-US", {
                                   style: "currency",
                                   currency: "USD",
                                 })
                               : `$${space.price}`}
+                          </td>
+                          <td className="py-4 px-6 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <Link href={`/browse/${space._id}`}>
+                                <Button
+                                  size="sm"
+                                  className="h-8 bg-white/[0.02] border border-white/5 hover:bg-white/10 text-neutral-300 text-[10px] font-bold uppercase tracking-wider rounded-lg flex items-center gap-1.5 cursor-pointer"
+                                >
+                                  <Eye className="w-3.5 h-3.5" /> View
+                                </Button>
+                              </Link>
+                              {canModify && (
+                                <Link
+                                  href={`/dashboard/items/edit/${space._id}`}
+                                >
+                                  <Button
+                                    size="sm"
+                                    className="h-8 bg-white/[0.02] border border-[#dfb780]/20 hover:bg-[#dfb780]/10 text-[#dfb780] text-[10px] font-bold uppercase tracking-wider rounded-lg flex items-center gap-1.5 cursor-pointer"
+                                  >
+                                    <Edit className="w-3.5 h-3.5" /> Edit
+                                  </Button>
+                                </Link>
+                              )}
+                              {canModify && (
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleDelete(space._id)}
+                                  isPending={deletingId === space._id}
+                                  className="h-8 bg-red-950/20 border border-red-500/10 hover:bg-red-500/10 text-red-400 text-[10px] font-bold uppercase tracking-wider rounded-lg flex items-center gap-1.5 cursor-pointer"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" /> Delete
+                                </Button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="block md:hidden divide-y divide-white/[0.02]">
+                {spaces.map((space) => {
+                  const isOwner = space.architectEmail === session?.user?.email;
+                  const isSteward =
+                    session?.user?.role === "admin" ||
+                    session?.user?.role === "moderator";
+                  const canModify = isOwner || isSteward;
+
+                  return (
+                    <div key={space._id} className="p-4 space-y-4">
+                      <div className="flex gap-4">
+                        <div className="w-20 h-16 relative rounded-lg overflow-hidden bg-neutral-900 border border-white/5 shrink-0">
+                          {space.coverImage ? (
+                            <img
+                              src={space.coverImage}
+                              alt={space.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-[10px] text-neutral-600 uppercase tracking-widest font-mono">
+                              Void
+                            </div>
+                          )}
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-neutral-200 font-medium block">
+                            {space.title}
                           </span>
+                          <div className="flex items-center gap-2">
+                            <span className="px-1.5 py-0.5 rounded text-[8px] uppercase tracking-wider bg-white/[0.02] text-neutral-400 border border-white/[0.02]">
+                              {space.category}
+                            </span>
+                            <span className="text-[#dfb780] text-xs font-medium tracking-wide">
+                              {typeof space.price === "number"
+                                ? space.price.toLocaleString("en-US", {
+                                    style: "currency",
+                                    currency: "USD",
+                                  })
+                                : `$${space.price}`}
+                            </span>
+                          </div>
                         </div>
                       </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <Link href={`/browse/${space._id}`} className="w-full">
+                          <Button
+                            size="sm"
+                            className="w-full h-9 bg-white/[0.02] border border-white/5 hover:bg-white/10 text-neutral-300 text-[10px] font-bold uppercase tracking-wider rounded-lg flex items-center justify-center gap-1.5 cursor-pointer"
+                          >
+                            <Eye className="w-3.5 h-3.5" /> View
+                          </Button>
+                        </Link>
+                        {canModify && (
+                          <Link
+                            href={`/dashboard/items/edit/${space._id}`}
+                            className="w-full"
+                          >
+                            <Button
+                              size="sm"
+                              className="w-full h-9 bg-white/[0.02] border border-[#dfb780]/20 hover:bg-[#dfb780]/10 text-[#dfb780] text-[10px] font-bold uppercase tracking-wider rounded-lg flex items-center justify-center gap-1.5 cursor-pointer"
+                            >
+                              <Edit className="w-3.5 h-3.5" /> Edit
+                            </Button>
+                          </Link>
+                        )}
+                        {canModify && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleDelete(space._id)}
+                            isPending={deletingId === space._id}
+                            className="w-full h-9 bg-red-950/20 border border-red-500/10 hover:bg-red-500/10 text-red-400 text-[10px] font-bold uppercase tracking-wider rounded-lg flex items-center justify-center gap-1.5 cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" /> Delete
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Link href={`/browse/${space._id}`} className="w-full">
-                        <Button
-                          size="sm"
-                          className="w-full h-9 bg-white/[0.02] border border-white/5 hover:bg-white/10 text-neutral-300 text-[10px] font-bold uppercase tracking-wider rounded-lg flex items-center justify-center gap-1.5 cursor-pointer"
-                        >
-                          <Eye className="w-3.5 h-3.5" /> View
-                        </Button>
-                      </Link>
-                      <Button
-                        size="sm"
-                        onClick={() => handleDelete(space._id)}
-                        isPending={deletingId === space._id}
-                        className="w-full h-9 bg-red-950/20 border border-red-500/10 hover:bg-red-500/10 text-red-400 text-[10px] font-bold uppercase tracking-wider rounded-lg flex items-center justify-center gap-1.5 cursor-pointer"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" /> Delete
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </>
           )}

@@ -54,6 +54,21 @@ export async function updateSpace(
 
   try {
     const db = await getDb();
+    const existingSpace = await db
+      .collection("spaces")
+      .findOne({ _id: new ObjectId(id) });
+
+    if (!existingSpace) {
+      return { error: "Target spatial blueprint record not found." };
+    }
+
+    const isOwner = existingSpace.architectEmail === user.email;
+    const isSteward = user.role === "admin" || user.role === "moderator";
+
+    if (!isOwner && !isSteward) {
+      return { error: "Access denied: Content ownership limits enforced." };
+    }
+
     const updateFields: Record<string, any> = {
       title: data.title,
       category: data.category,
@@ -83,13 +98,29 @@ export async function updateSpace(
 
 export async function deleteSpace(id: string): Promise<any> {
   const user = await getUserSession();
-  if (!user || user.role !== "admin") {
-    return { error: "Admin verification required" };
+  if (!user) {
+    return { error: "Unauthorized" };
   }
 
   try {
     const db = await getDb();
+    const existingSpace = await db
+      .collection("spaces")
+      .findOne({ _id: new ObjectId(id) });
+
+    if (!existingSpace) {
+      return { error: "Target spatial blueprint record not found." };
+    }
+
+    const isOwner = existingSpace.architectEmail === user.email;
+    const isSteward = user.role === "admin" || user.role === "moderator";
+
+    if (!isOwner && !isSteward) {
+      return { error: "Access denied: Content ownership limits enforced." };
+    }
+
     await db.collection("spaces").deleteOne({ _id: new ObjectId(id) });
+
     revalidatePath("/dashboard/browse");
     revalidatePath("/dashboard/items/manage");
     return { success: true };

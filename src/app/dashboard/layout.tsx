@@ -10,6 +10,7 @@ import {
   ShieldAlert,
   Layers,
   User,
+  Sparkles,
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 
@@ -70,6 +71,18 @@ export default function DashboardLayout({
             </Link>
 
             <Link
+              href="/dashboard/vision"
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium tracking-wider uppercase transition ${
+                pathname === "/dashboard/vision"
+                  ? "bg-[#dfb780]/15 text-[#dfb780]"
+                  : "text-neutral-400 hover:text-white hover:bg-white/[0.02]"
+              }`}
+            >
+              <Sparkles className="w-4 h-4 text-neutral-500" />
+              Spatial Vision AI
+            </Link>
+
+            <Link
               href="/dashboard/profile"
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium tracking-wider uppercase transition ${
                 pathname === "/dashboard/profile"
@@ -111,9 +124,9 @@ export default function DashboardLayout({
 
             {(role === "admin" || role === "moderator") && (
               <Link
-                href="/dashboard/moderator/inspections"
+                href="/dashboard/moderator"
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium tracking-wider uppercase transition ${
-                  pathname === "/dashboard/moderator/inspections"
+                  pathname === "/dashboard/moderator"
                     ? "bg-[#dfb780]/15 text-[#dfb780]"
                     : "text-neutral-400 hover:text-white hover:bg-white/[0.02]"
                 }`}
@@ -125,9 +138,9 @@ export default function DashboardLayout({
 
             {role === "admin" && (
               <Link
-                href="/dashboard/admin/users"
+                href="/dashboard/admin"
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium tracking-wider uppercase transition ${
-                  pathname === "/dashboard/admin/users"
+                  pathname === "/dashboard/admin"
                     ? "bg-[#dfb780]/15 text-[#dfb780]"
                     : "text-neutral-400 hover:text-white hover:bg-white/[0.02]"
                 }`}

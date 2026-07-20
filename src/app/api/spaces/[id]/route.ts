@@ -43,6 +43,24 @@ export async function PATCH(
     }
 
     const db = await getDb();
+    const existingSpace = await db
+      .collection("spaces")
+      .findOne({ _id: new ObjectId(id) });
+
+    if (!existingSpace) {
+      return NextResponse.json({ error: "Record not found" }, { status: 404 });
+    }
+
+    const isOwner = existingSpace.architectEmail === user.email;
+    const isSteward = user.role === "admin" || user.role === "moderator";
+
+    if (!isOwner && !isSteward) {
+      return NextResponse.json(
+        { error: "Forbidden: Ownership verified" },
+        { status: 403 },
+      );
+    }
+
     const body = await request.json();
 
     const updateFields: Record<string, any> = {
@@ -54,6 +72,7 @@ export async function PATCH(
       coverImage: body.coverImage,
       dimensions: body.dimensions,
       location: body.location,
+      status: body.status, // Allow moderator reviews status modification
     };
 
     Object.keys(updateFields).forEach(
@@ -77,14 +96,26 @@ export async function DELETE(
   try {
     const { id } = await params;
     const user = await getUserSession();
-    if (!user || user.role !== "admin") {
-      return NextResponse.json(
-        { error: "Admin verification required" },
-        { status: 403 },
-      );
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const db = await getDb();
+    const existingSpace = await db
+      .collection("spaces")
+      .findOne({ _id: new ObjectId(id) });
+
+    if (!existingSpace) {
+      return NextResponse.json({ error: "Record not found" }, { status: 404 });
+    }
+
+    const isOwner = existingSpace.architectEmail === user.email;
+    const isSteward = user.role === "admin" || user.role === "moderator";
+
+    if (!isOwner && !isSteward) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     await db.collection("spaces").deleteOne({ _id: new ObjectId(id) });
     return NextResponse.json({ success: true });
   } catch (err: any) {
