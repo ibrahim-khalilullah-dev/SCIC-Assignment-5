@@ -1,35 +1,52 @@
 # Aetheris Platform
 
-Aetheris is a luxury full-stack spatial design and architectural curation platform powered by integrated multi-modal AI agents. The platform facilitates the listing, exploration, and dynamic curation of high-end architectural spaces while providing clients with cognitive spatial advice and intelligent matching engines.
+Aetheris is a full-stack, luxury spatial design and architectural curation platform powered by integrated multi-modal AI agents. The platform facilitates the listing, exploration, and dynamic curation of premium architectural designs (such as Japandi Minimalism, Modernist Brutalism, Classical Bauhaus, and Nordic Rustic) while providing clients with cognitive spatial advice and intelligent matching engines.
 
 ---
 
-## Technical Specifications
+## **Live Access & Repository**
 
-### Frontend
-*   **Framework:** Next.js 16 (App Router)
-*   **Library:** React 19
-*   **Language:** TypeScript (Strict Mode)
-*   **Styling:** Tailwind CSS (with dark minimalist defaults)
-*   **UI Component Library:** HeroUI (v3) / NextUI equivalents
-*   **State Management:** TanStack Query (React Query)
-*   **Icons:** Lucide React
-*   **Animations:** Framer Motion (Framer Motion v12 / motion)
-
-### Backend & Core Services
-*   **Runtime:** Node.js
-*   **Server:** Next.js built-in API Route Handlers & Direct Server Actions
-*   **Database:** MongoDB (via official native MongoDB driver `mongodb`)
-*   **Authentication:** Better-Auth (with MongoDB adapter, session middleware, and credentials/Google OAuth provider integration)
-*   **Payment Processing:** Stripe Node SDK & Stripe Elements client-side
-*   **Agentic AI:** Google Gemini API (utilizing stable `gemini-2.5-flash` model engines)
-*   **Asset Storage:** ImgBB API Integration (direct device file upload mapping)
+* **Live Platform URL:** [https://aetheris-platform.vercel.app](https://aetheris-platform.vercel.app)
 
 ---
 
-## User Roles & System Privileges (RBAC)
+## **How the Platform Works**
 
-The application supports three distinct user roles mapped dynamically across four operational user profiles:
+Aetheris is constructed as a unified full-stack application leveraging the Next.js App Router. The frontend client layers interact directly with the backend using dynamic Route Handlers and secure Next.js Server Actions. 
+
+### **The Architecture**
+Unlike traditional multi-tier setups, Aetheris does not use a separate Express.js server:
+1. **Dynamic Client Views:** Constructed using React 19, Tailwind CSS, HeroUI (v3), and Motion (Framer Motion v12) to present a premium, unified pitch-black (`#040404`) and luxury antique gold (`#dfb780`) aesthetic.
+2. **Built-in Backend Routers:** API operations and secure server tasks are fully executed inside App Router route paths (`src/app/api/`), linking directly to MongoDB via the official native `mongodb` driver.
+3. **Better-Auth & MongoDB Adapter:** Manages user state sessions, token validations, and dynamic registration parameters directly linked to database roles.
+4. **Resilient Billing:** Incorporates a Stripe Node SDK with integrated local/offline payment fallback captures to ensure a smooth licensing loop even in environments without valid Stripe configurations.
+
+---
+
+## **Key Platform Features**
+
+### **1. Multimodal Spatial Vision AI**
+Located at `/dashboard/vision`, this module allows clients to upload floor drafts or physical interior renderings. The system uploads the asset to remote storage and feeds the image directly to the Google Gemini 2.5-flash vision engine, returning an instant classification of design style, dominant color palettes, lighting vectors, and layout optimization advice.
+
+### **2. Architectural Advisor (Aetheris Chat Curator)**
+Available at `/dashboard/user` (via the AI Advisor panel), this context-aware assistant utilizes historical messaging prompts to discuss wabi-sabi details, brutalist concrete shadows, and modernist proportions with absolute design authority.
+
+### **3. Smart Recommender (AI Matching Engine)**
+Located at `/ai-recommend` (available to authenticated clients), this engine reviews written client preferences alongside financial boundaries, analyzes active spatial database entries, and generates a structured JSON output of the top matching blueprint, along with its suitability score and detailed architectural justification.
+
+### **4. Live Bookmarks Inspiration Grid**
+Clients can bookmark high-end catalog curations. The user dashboard retrieves these selections from your database collections and renders an inspiration board featuring live unbookmarking triggers.
+
+### **5. Dynamic Metrics & SVG Waveforms**
+Static indicators have been replaced with live database pipelines:
+* The landing page statistcs count and average all database spatial listings.
+* Both the Admin Control Panel and Client Portal dashboards generate dynamic coordinates mapping live payment totals and complexity indices over time onto scalable vector SVG graphs.
+
+---
+
+## **Role-Based Access Control (RBAC) & Privileges**
+
+The platform maintains secure operational boundaries across four distinct user designations:
 
 ```
 [Admin] ── (Inherits & Overrides) ──> [Moderator] ── (Inherits & Overrides) ──> [Normal User]
@@ -39,151 +56,85 @@ The application supports three distinct user roles mapped dynamically across fou
                                                             [Client / User]                      [Architect / Creator]
 ```
 
-### 1. Admin (Absolute System Controller)
-*   Accesses the Admin Control Panel `/dashboard/admin`.
-*   Reviews global stats (managed listings volume, active licenses, accrued platform fees).
-*   Analyzes transaction curves via custom vector SVG charts.
-*   Modifies user account roles (promoting standard accounts to administrators).
-*   Executes global block and ban parameters on bad actors.
-*   Deletes any non-compliant spatial listing in the database.
+### **1. Admin (Absolute System Controller)**
+* **Access Control:** Full entry to `/dashboard/admin`.
+* **Platform Metrics:** Views global statistics (total listings volume, active registered profiles, total platform fee revenues).
+* **Explicit Designation Overrides:** Modifies any account's status via a drop-down menu, synchronizing system roles between `Client`, `Architect`, `Moderator`, and `Admin`.
+* **User & Content Deletion:** Power to remove bad actors and non-compliant spatial records globally.
+* **Direct Warnings:** Issues warning notices to users that render as actionable banners on their dashboards.
 
-### 2. Moderator (Platform Steward)
-*   Accesses the Moderator Panel `/dashboard/moderator`.
-*   Audits spatial blueprint submissions pending quality verification.
-*   Grants official approval stamps, releasing listings to the public catalog and homepage showcases.
-*   Flags or hides non-compliant portfolios from public search indexes.
-*   Moderates design critiques, reviews, and community architectural feedback.
+### **2. Moderator (Platform Steward)**
+* **Access Control:** Full entry to `/dashboard/moderator`.
+* **Review Pipeline:** Audits newly uploaded blueprints, applies verified approval stamps, or flags non-compliant designs.
+* **Moderator User Blocking:** Authorized to ban or unban standard clients and architects (restricted from blocking administrators or other moderators).
+* **Direct Warning System:** Issues custom notices to target users.
 
-### 3. Client / User (Standard Customer)
-*   Accesses the Client Portal `/dashboard/user`.
-*   Browses, searches, and filters verified blueprints ($10k - $35k) in the explore catalog.
-*   Engages the Aetheris Curator (Gemini AI Chat) for design advice.
-*   Consults the Smart Recommender (AI Matching Engine) to locate layouts matching preferences.
-*   Licenses verified architectural blueprints through Stripe Checkout integrations.
-*   Bookmarks favorite curations and manages active licenses inside their dashboard.
+### **3. Architect (Studio Creator)**
+* **Access Control:** Full entry to `/dashboard/writer`.
+* **Publishing Privileges:** Unlocks portfolio uploading by paying the $20 registration fee.
+* **Listing Registration (`/items/add`):** Publishes spatial templates, dimensions, rates, and locations, with direct image uploads natively mapped to ImgBB storage API.
+* **Property Controls (`/items/manage`):** Allows creators to edit their layouts via pre-populated edit forms or delete owned templates securely.
 
-### 4. Architect (Studio Creator)
-*   Accesses the Architect Portal `/dashboard/writer`.
-*   Pays the $20 registration fee to activate studio verified listings.
-*   Registers new spatial designs (dimensions, pricing, location, CAD images) via centered upload forms.
-*   Leverages direct device image uploads (natively mapped to ImgBB storage API).
-*   Tracks portfolio statistics, total licensing revenue earned, and active client inquiries.
+### **4. Client (Standard User)**
+* **Access Control:** Full entry to `/dashboard/user`.
+* **Browse Vault (`/browse`):** Searches and filters listings by category, rates, or rating priorities.
+* **Licensing:** Acquires spatial plans via Stripe Checkout or interactive offline bypasses to store active licenses inside their profile.
 
 ---
 
-## Operational Data Flow
+## **Cloning & Local Development Guide**
 
-```
-[Architect submits Blueprint] ──> [Enters Pending Verification] ──> [Moderator Approves Space]
-                                                                                  │
-                                                                                  ▼
-[Platform Administrator Monitors] <── [Client Licenses via Stripe] <── [Space visible in Catalog]
-```
+Follow these instructions to clone, configure, and launch the platform locally:
 
----
-
-## Database Schema Specifications (MongoDB)
-
-### Users Collection (`users`)
-```typescript
-interface UserSchema {
-  _id: import("mongodb").ObjectId;
-  name: string;
-  email: string;
-  emailVerified: boolean;
-  image?: string;
-  role: "user" | "writer" | "admin" | "moderator";
-  userRole: "user" | "writer";
-  verifiedArchitect: boolean;
-  banned?: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
+### **1. Clone the Repository**
+Open your terminal and clone the repository to your local machine:
+```bash
+git clone https://github.com/ibrahim-khalilullah-dev/SCIC-Assignment-5.git
+cd SCIC-Assignment-5
 ```
 
-### Spaces Collection (`spaces`)
-```typescript
-interface SpaceSchema {
-  _id: import("mongodb").ObjectId;
-  title: string;
-  category: "Japandi Minimalism" | "Modernist Brutalism" | "Classical Bauhaus" | "Nordic Rustic";
-  shortDescription: string;
-  description: string;
-  price: number;
-  rating: number;
-  coverImage: string;
-  architectName: string;
-  architectEmail: string;
-  dimensions: string;
-  location: string;
-  status?: "Approved" | "Flagged";
-  createdAt: Date;
-}
+### **2. Install Dependencies**
+Install the necessary package modules configured for React 19 and Next.js 16:
+```bash
+npm install
 ```
 
-### Transactions Collection (`transactions`)
-```typescript
-interface TransactionSchema {
-  _id: import("mongodb").ObjectId;
-  stripeSessionId: string;
-  type: "purchase" | "publishing fee";
-  buyerEmail: string;
-  associatedItemId?: import("mongodb").ObjectId;
-  amountPaid: number;
-  currency: string;
-  status: "pending" | "completed" | "failed";
-  createdAt: Date;
-}
-```
-
-### Bookmarks Collection (`bookmarks`)
-```typescript
-interface BookmarkSchema {
-  _id: import("mongodb").ObjectId;
-  userId: string;
-  spaceId: import("mongodb").ObjectId;
-  createdAt: Date;
-}
-```
-
----
-
-## Environment Variable Setup (`.env.local`)
-
+### **3. Configure Environment Variables**
+Create a `.env.local` file in the root of your project directory and add your keys:
 ```env
+# Platform Base URLs
 BETTER_AUTH_URL=http://localhost:3000
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
+
+# Database Settings
 MONGO_DB_URI=mongodb+srv://SCIC-Assignment-5:Ut4myRfjwV8oIT8W@cluster0.ygl3akl.mongodb.net/?appName=Cluster0
 AUTH_DB_NAME=SCIC-Assignment-5
+
+# AI API Key (Required for AI Advisor, Vision AI & AI Recommender)
 GEMINI_API_KEY=your_gemini_api_key_here
-STRIPE_SECRET_KEY=your_stripe_secret_key_here
+
+# Payment Settings (Use "sk_test_mock..." or equivalent to test offline checkout fallback)
+STRIPE_SECRET_KEY=sk_test_mock_key_for_vercel_build_pass
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key_here
+
+# Asset Storage Key (ImgBB Key used for profile and blueprint uploads)
 NEXT_PUBLIC_IMAGE_UPLOAD_API=81e9a814e602ad8b0864a375b9d886e2
+
+# Authentication Secrets
 BETTER_AUTH_SECRET=QaEZkJmQ2PiA29HJJdsDbdVzU63VEQtQ
 GOOGLE_CLIENT_ID=your_google_client_id_here
 GOOGLE_CLIENT_SECRET=your_google_client_secret_here
 ```
 
----
-
-## Local Setup & Development Guide
-
-Follow these steps to initialize and launch the development environment:
-
-### 1. Installation
-Install project dependencies:
-```bash
-npm install
-```
-
-### 2. Launch Local Servers
-Run the unified frontend and backend server environment:
+### **4. Launch the Development Server**
+Run the unified frontend and backend environment:
 ```bash
 npm run dev
 ```
+Open **[http://localhost:3000](http://localhost:3000)** in your browser to view the platform.
 
-### 3. Production Compiling
-Build the Next.js production build bundle and test TypeScript static compilation safety:
+### **5. Build for Production**
+Test TypeScript static compilation safety and compile the optimized production package:
 ```bash
 npm run build
 ```
